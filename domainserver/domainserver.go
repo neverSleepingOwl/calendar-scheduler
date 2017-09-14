@@ -7,8 +7,8 @@ import (
 	"scheduler/utility"
 )
 
-//unixSocketServer - struct, responsible for connections via unix domain socket
-type unixSocketServer struct{	//	TODO add normal constructor
+//UnixSocketServer - struct, responsible for connections via unix domain socket
+type UnixSocketServer struct{//	TODO add normal constructor
 	Address string //	filename of unix socket, get from config
 	HandleReceive func(data utility.ChannelData)string // callback
 }
@@ -18,7 +18,7 @@ type unixSocketServer struct{	//	TODO add normal constructor
 
 //openSocket - function, opening unix socket and waiting for connection
 //main unix server loop
-func (u unixSocketServer) openSocket(){
+func (u UnixSocketServer) openSocket(){
 	syscall.Unlink(u.Address) //	remove previous socket connections
 
 	l, err := net.Listen("unix", u.Address) //	create socket file and bind it
@@ -47,7 +47,7 @@ func (u unixSocketServer) openSocket(){
 
 //readCommand - function, reading commands from a given connection
 //puts data to output channel
-func (u unixSocketServer)readCommand(connection net.Conn){
+func (u UnixSocketServer)readCommand(connection net.Conn){
 	buff:=make([]byte, 1024)
 
 	defer connection.Close()	//	close connection on error

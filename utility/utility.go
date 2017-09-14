@@ -34,12 +34,14 @@ func NewNotification(input []byte)(ChannelData) {
 	command := string(input)
 
 	deleteChecker := regexp.MustCompile(`^(([rR]emove)|([Dd]elete))\s+\w+$`)
+	deleteCommand := regexp.MustCompile(`^(([rR]emove)|([Dd]elete))\s+`)
 	delimeter:= regexp.MustCompile(`\s`)
 
 	listChecker := "ls"
 
 	if deleteChecker.MatchString(string(input)){
-		return ChannelData{Command:"delete-"+delimeter.ReplaceAllString(command,"")}
+		s := delimeter.ReplaceAllString(command,"")
+		return ChannelData{Command:deleteCommand.ReplaceAllString(s,"")}
 	}else if command == listChecker{
 		return ChannelData{Command:"ls"}
 	}
