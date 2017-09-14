@@ -54,11 +54,15 @@ func (u UnixSocketServer)readCommand(connection net.Conn){
 
 	for{
 		if size,err := connection.Read(buff);err == nil{	//	read message
-			if data := utility.NewNotification(buff[:size]);data.Err != nil{
+		if size > 1{
+			if data := utility.NewNotification(buff[:size]);data.Err == nil{
 				connection.Write([]byte(u.HandleReceive(data)))		//send callback result
 			}else{
-				connection.Write([]byte(err.Error()))	//	response if error
+				connection.Write([]byte(data.Err.Error()))	//	response if error
 			}
+		}else{
+			continue
+		}
 		}else{
 			log.Println("Error, incorrect read from unix domain  socket, closing connection")
 			return

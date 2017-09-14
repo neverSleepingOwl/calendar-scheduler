@@ -31,7 +31,7 @@ func (d * dbRecord)notify(){
 	d.timer.Run()
 	for{
 		select{
-		case d.timer.Expired:
+		case <-d.timer.Expired:
 			if d.Message.DueTime.Unix() > time.Now().Unix(){
 				exec.Command("notify-send","-i", "/usr/share/icons/gnome/32x32/emotes/face-angel.png", d.Message.Title, d.Message.Body)
 				d.timer.Set(delay)
@@ -40,7 +40,7 @@ func (d * dbRecord)notify(){
 				exec.Command("notify-send", "-i", "/usr/share/icons/gnome/32x32/emotes/face-monkey.png", d.Message.Title, d.Message.Body, "-u", "critical")
 				return
 			}
-		case d.Done:
+		case <-d.Done:
 			return
 		}
 	}
@@ -79,7 +79,7 @@ func (n * Notifier)messageHandler(data utility.ChannelData)string{
 			delete(n.Database, data.Command)
 			return data.Command + " deleted succesfully"
 		}else{
-			return data.Command + "does not exist"
+			return data.Command + " does not exist"
 		}
 	}else{
 		n.mu.Lock()
@@ -88,7 +88,8 @@ func (n * Notifier)messageHandler(data utility.ChannelData)string{
 			return "Task" + data.Title + " already exists, try creating task with another name"
 		}else{
 			n.Database[data.Title] = dbRecord{make(chan struct{}), data.Notification, customtimer.Init()}
-			go n.Database[data.Title].notify()
+			i,_ := n.Database[data.Title]	//	map returns rvalue, so we should store it to run a pointer method
+			go (&i).notify()
 			return "notification set: " + data.Title
 		}
 	}
