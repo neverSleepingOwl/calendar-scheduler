@@ -16,9 +16,9 @@ type UnixSocketServer struct{//	TODO add normal constructor
 
 
 
-//openSocket - function, opening unix socket and waiting for connection
+//OpenSocket - function, opening unix socket and waiting for connection
 //main unix server loop
-func (u UnixSocketServer) openSocket(){
+func (u UnixSocketServer) OpenSocket(){
 	syscall.Unlink(u.Address) //	remove previous socket connections
 
 	l, err := net.Listen("unix", u.Address) //	create socket file and bind it
