@@ -1,16 +1,18 @@
 package domainserver
 
 import (
-	""
 	"syscall"
 	"net"
 	"log"
+	"scheduler/utility"
 )
 
 //unixSocketServer - struct, responsible for connections via unix domain socket
 type unixSocketServer struct{
-	Address string `json:"Address"` //	filename of unix socket, get from config
+	Address string //	filename of unix socket, get from config
+	Output  chan utility.ChannelData	//
 }
+
 
 
 
