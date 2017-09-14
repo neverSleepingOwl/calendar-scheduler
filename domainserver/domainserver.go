@@ -8,9 +8,9 @@ import (
 )
 
 //unixSocketServer - struct, responsible for connections via unix domain socket
-type unixSocketServer struct{
+type unixSocketServer struct{	//	TODO add normal constructor
 	Address string //	filename of unix socket, get from config
-	Output  chan utility.ChannelData	//
+	HandleReceive func(data utility.ChannelData)string // callback
 }
 
 
@@ -54,7 +54,11 @@ func (u unixSocketServer)readCommand(connection net.Conn){
 
 	for{
 		if size,err := connection.Read(buff);err == nil{	//	read message
-
+			if data := utility.NewNotification(buff[:size]);data.Err != nil{
+				connection.Write([]byte(u.HandleReceive(data)))		//send callback result
+			}else{
+				connection.Write([]byte(err.Error()))	//	response if error
+			}
 		}else{
 			log.Println("Error, incorrect read from unix domain  socket, closing connection")
 			return

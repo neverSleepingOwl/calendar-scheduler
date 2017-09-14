@@ -2,8 +2,9 @@ package utility
 
 import (
 	"regexp"
-	"strings"
 	"errors"
+	"encoding/json"
+	"time"
 )
 
 //package, containing small functions for different purposes:
@@ -11,64 +12,55 @@ import (
 
 
 type Notification struct{
-	Title     string	//	notification title
-	Body      string	//	notification body
-	IconPath  string	//	path to icon
-	DueDate   uint32	//	due date
-	Frequency uint32	//  how often will notifications appear
+	Title     string	`json:"title"`     //	notification title
+	Body      string	`json:"body"`      //	notification body
+	DueDate   string	`json:"due"`       //	due date
+	Delay     string    `json:"delay"`	   //  delay before two notifications
+	Frequency uint	    `json:"frequency"` //  how often will notifications appear
+	DueTime   time.Time                    //	due date, but has time format
 }
 
 //struct for channel output
 type ChannelData struct{
 	Notification
+	Command string
 	Err error
 }
 
 //NweNotification parse message
-func NewNotification(input []byte)(c ChannelData){
-	dataToParse := string(input)
+func NewNotification(input []byte)(ChannelData) {
+	var c ChannelData = ChannelData{Notification:Notification{},Err:nil}
 
-	checker := regexp.MustCompile(`^(\w+:[^;\s]+\s*;\s*){2,5}(\w+:[^;\s]+)$`)
-	titleChecker := regexp.MustCompile(`^\s*[tT]itle\s*:\s*\w+$`)
-	bodyChecker := regexp.MustCompile(`^\s*([bB]ody)|([Mm]ess(a|[ea]n)ge)\s*:\s*.+$`)
-	iconPathChecker := titleChecker
-	dueDateChecker := regexp.MustCompile(`^\s*[Dd]ue\s*:.+`)
-	freqChecker := regexp.MustCompile(`^\s*[fF]requency\s*:\s*[1-9]+\d\s*(h|min|m|d(ay[s]?)?)\s*$`)
-	if !checker.MatchString(dataToParse){
-		return ChannelData{Notification{}, errors.New("incorrect input, syntax error")}
+	command := string(input)
+
+	deleteChecker := regexp.MustCompile(`^(([rR]emove)|([Dd]elete))\s+\w+$`)
+	delimeter:= regexp.MustCompile(`\s`)
+
+	listChecker := "ls"
+
+	if deleteChecker.MatchString(string(input)){
+		return ChannelData{Command:"delete-"+delimeter.ReplaceAllString(command,"")}
+	}else if command == listChecker{
+		return ChannelData{Command:"ls"}
 	}
-	splited := strings.Split(dataToParse," ")
-	for _,element:= range splited{
-		switch{
-		case titleChecker.MatchString(element):
-			if title:=strings.Split(trimWhitespaces(element),":"); len(title) > 1{
-				c.Title = title[1]
-			}else{
 
-			}
-		case bodyChecker.MatchString(element):
-			if body:=strings.Split(element,":"); len(body) > 1{
-				c.Body = body[1]
-			}
-		case iconPathChecker.MatchString(element):
-			if icon:=strings.Split(trimWhitespaces(element),":"); len(icon) > 1{
-				c.IconPath= icon[1]
-			}
-		case dueDateChecker.MatchString(element):
-		case freqChecker.MatchString(element):
+	if err:=json.Unmarshal(input,&c.Notification);err == nil{
+		c.DueTime,err = time.Parse(time.RFC822,c.DueDate)
+
+		if c.DueTime.Unix() < time.Now().Unix() || err != nil{
+			return ChannelData{Err:errors.New("error:incorrect date format")}
 		}
+
+		delay,delErr := time.ParseDuration(c.Delay)
+
+		if delErr != nil || delay.Hours() < 0.1{
+			return ChannelData{Err:errors.New("error:incorrect delay format")}
+		}
+
+		return c
+	}else{
+		return ChannelData{Err:err}
 	}
 }
-
-func trimWhitespaces(s string)string{
-	return strings.Replace(s, " ", "",-1)
-}
-
-func CheckDate(date string)bool{
-	dateChecker := regexp.MustCompile(`^([0-9]?\d\.){2}[1-9]\d{3}()$`)
-
-
-}
-
 
 
