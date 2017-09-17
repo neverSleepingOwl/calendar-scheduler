@@ -1,7 +1,7 @@
 package main
 
 import (
-	"scheduler/notificator"
+	"github.com/calendar-scheduler/mediator"
 	/*"time"
 	"github.com/coreos/go-systemd/daemon"
 	"log/syslog"
@@ -27,6 +27,6 @@ func main(){
 			time.Sleep(interval / 3)
 		}
 	}()*/
-	n := notificator.New()
+	n := mediator.New()
 	n.Start()
 }

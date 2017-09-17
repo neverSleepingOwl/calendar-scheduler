@@ -4,7 +4,7 @@ import (
 	"syscall"
 	"net"
 	"log"
-	"scheduler/utility"
+	"github.com/calendar-scheduler/utility"
 )
 
 //UnixSocketServer - struct, responsible for connections via unix domain socket
@@ -39,7 +39,7 @@ func (u UnixSocketServer) OpenSocket(){
 			return
 		}
 
-		log.Println("Domain socket connection accepted, waiting for commands")
+		log.Println("Domain socket connection accepted, waiting for commands...")
 
 		go u.readCommand(fileDescriptor)	//	read commands on accepted connection
 	}
@@ -58,7 +58,7 @@ func (u UnixSocketServer)readCommand(connection net.Conn){
 			if data := utility.NewNotification(buff[:size]);data.Err == nil{
 				connection.Write([]byte(u.HandleReceive(data)))		//send callback result
 			}else{
-				connection.Write([]byte(data.Err.Error()))	//	response if error
+				connection.Write([]byte(data.Err.Error()+"\n"))	//	response if error
 			}
 		}else{
 			continue

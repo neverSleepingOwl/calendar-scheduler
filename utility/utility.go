@@ -11,7 +11,7 @@ import (
 //package, containing small functions for different purposes:
 //parsing configs, parsing messages, checking time for correctness
 
-//{"title":"tag","body":"testing arp requests","due":"14 Sep 17 17:00 GMT","delay":"0.05h"}
+//{"title":"tag","body":"testing arp requests","due":"17 Sep 17 14:30 GMT","delay":"0.05h"}
 
 type Notification struct{
 	Title     string	`json:"title"`     //	notification title
@@ -41,13 +41,14 @@ func NewNotification(input []byte)(ChannelData) {
 	delimeter:= regexp.MustCompile(`\s`)
 
 	listChecker := "ls"
+	jsonChecker := "js"
 
 	if deleteChecker.MatchString(string(input)){
 		s := delimeter.ReplaceAllString(command,"")
 		s = deleteCommand.ReplaceAllString(s,"")
 		return ChannelData{Command:s}
-	}else if command == listChecker{
-		return ChannelData{Command:"ls"}
+	}else if command == listChecker || command == jsonChecker{
+		return ChannelData{Command:command}
 	}
 
 	if err:=json.Unmarshal(input,&c.Notification);err == nil{
@@ -57,13 +58,13 @@ func NewNotification(input []byte)(ChannelData) {
 		if c.DueTime.Unix() < time.Now().Unix() || err != nil{
 			fmt.Println(time.Now().Unix())
 			fmt.Println(c.DueTime.Unix())
-			return ChannelData{Err:errors.New("error:incorrect date format " )}
+			return ChannelData{Err:errors.New("error:incorrect date format\n" )}
 		}
 
 		delay,delErr := time.ParseDuration(c.Delay)
 
 		if delErr != nil || delay.Hours() < 0.05{
-			return ChannelData{Err:errors.New("error:incorrect delay format")}
+			return ChannelData{Err:errors.New("error:incorrect delay format\n")}
 		}
 
 		return c
