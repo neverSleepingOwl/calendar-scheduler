@@ -85,7 +85,7 @@ func (m *Mediator)messageHandler(data utility.ChannelData)string {
 	} else if data.Command == "js"{
 		m.mu.Lock()
 		defer m.mu.Unlock()
-		for _, element := range m.Database {	//	TODO add separator
+		for _, element := range m.Database {
 			tmp,_ := json.Marshal(element.Message)
 			output += string(tmp)
 		}
